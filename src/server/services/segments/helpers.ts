@@ -51,7 +51,7 @@ export const getSegmentAggregateQuery = ({
   //or transaction group as these depend on the events. This avoids
   //having to join the the potentially big events collection  unnecessarily
   let eventsLookupMatch: Record<string, unknown>[] = [];
-  if (segmentSelectionsGroup && segmentSelectionsGroup.length > 1) {
+  if (segmentSelectionsGroup && segmentSelectionsGroup.length > 0) {
     //When segment selections contain a transaction group
     // add a match to pipeline to match transaction events
     if (segmentSelectionsGroup.find((s) => s.groupKey === "transaction")) {

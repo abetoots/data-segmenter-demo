@@ -223,6 +223,7 @@ const getProfileSegmentOptions: GetOptionsFn<
           company: 1,
           jobTitle: 1,
           sector: 1,
+          tags: 1,
         },
       },
       {
@@ -272,6 +273,27 @@ const getProfileSegmentOptions: GetOptionsFn<
             { $group: { _id: "$sector", count: { $sum: 1 } } },
             { $project: { _id: 0, value: "$_id", count: 1 } },
           ],
+          tagOptions: [
+            {
+              $unwind: {
+                path: "$tags",
+                preserveNullAndEmptyArrays: false,
+              },
+            },
+            {
+              $group: {
+                _id: "$tags",
+                count: { $sum: 1 },
+              },
+            },
+            {
+              $project: {
+                _id: 0,
+                value: "$_id",
+                count: 1,
+              },
+            },
+          ],
         },
       },
     ])
@@ -287,6 +309,7 @@ const getProfileSegmentOptions: GetOptionsFn<
   const companyOptions = data[0]?.companyOptions as SegmentOptionValue[];
   const jobTitleOptions = data[0]?.jobTitleOptions as SegmentOptionValue[];
   const sectorOptions = data[0]?.sectorOptions as SegmentOptionValue[];
+  const tagOptions = data[0]?.tagOptions as SegmentOptionValue[];
 
   return {
     address: addressOptions,
@@ -297,7 +320,7 @@ const getProfileSegmentOptions: GetOptionsFn<
     jobtitle: jobTitleOptions,
     sector: sectorOptions,
     street: streetOptions,
-    tags: [],
+    tags: tagOptions,
     updatedsource: updatedsourceOptions,
     zip: zipOptions,
   };
@@ -396,6 +419,29 @@ const getTransactionSegmentOptions: GetOptionsFn<
               },
             },
           ],
+          tagOptions: [
+            {
+              $unwind: {
+                path: "$customer.tags",
+                preserveNullAndEmptyArrays: false,
+              },
+            },
+            {
+              $group: {
+                _id: "$customer.tags",
+                profilesSet: {
+                  $addToSet: "$profile.id",
+                },
+              },
+            },
+            {
+              $project: {
+                _id: 0,
+                value: "$_id",
+                count: { $size: "$profilesSet" },
+              },
+            },
+          ],
           productNameOptions: [
             {
               $group: {
@@ -461,13 +507,14 @@ const getTransactionSegmentOptions: GetOptionsFn<
     ?.productNameOptions as SegmentOptionValue[];
   const variantOptions = data[0]?.variantOptions as SegmentOptionValue[];
   const vendorOptions = data[0]?.vendorOptions as SegmentOptionValue[];
+  const tagOptions = data[0]?.tagOptions as SegmentOptionValue[];
 
   return {
     "product name": productNameOptions,
     currency: currencyOptions,
     discountcode: discountcodeOptions,
     spend: spendOptions,
-    tags: [],
+    tags: tagOptions,
     utm: utmOptions,
     variant: variantOptions,
     vendor: vendorOptions,
